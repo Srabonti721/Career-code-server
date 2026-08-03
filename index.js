@@ -19,7 +19,8 @@ const client = new MongoClient(uri, {
   }
 });
 client.connect().catch(console.dir);
-const careerCollection = client.db("CareerCode").collection("jobs")
+const careerCollection = client.db("CareerCode").collection("jobs");
+const applicationsCollection = client.db("CareerCode").collection("applications")
 
 app.get('/jobs', async(req, res)=>{
   const cursor = careerCollection.find();
@@ -33,6 +34,13 @@ app.get("/jobs/:id", async(req, res)=>{
   const result = await careerCollection.findOne(query);
   res.send(result)
 })
+
+// application api
+ app.post("/applications", async(req, res)=>{
+  const application = req.body;
+  const result = await applicationsCollection.insertOne(application);
+  res.send(result)
+ })
 
 app.get('/', (req,res)=>{
     res.send("career code is cooking")
