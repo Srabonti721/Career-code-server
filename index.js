@@ -30,10 +30,24 @@ const applicationsCollection = client
     .collection("applications");
 
 app.get("/jobs", async (req, res) => {
-    const cursor = careerCollection.find();
+
+    const email = req.query.email;
+const query = {};
+if(email){
+    query.hr_email = email;
+}
+
+    const cursor = careerCollection.find(query);
     const result = await cursor.toArray();
     res.send(result);
 });
+// this not applicable
+// app.get('/jobsByEmailAddress' , async(req, res)=>{
+//     const email = req.query.email;
+//     const query = {he_email: email}
+//     const result = await careerCollection.find(query).toArray();
+//     res.send(result)
+// })
 
 app.get("/jobs/:id", async (req, res) => {
     const id = req.params.id;
@@ -41,6 +55,12 @@ app.get("/jobs/:id", async (req, res) => {
     const result = await careerCollection.findOne(query);
     res.send(result);
 });
+
+app.post("/jobs", async(req, res)=>{
+    const newJob = req.body;
+    const result = await careerCollection.insertOne(newJob);
+    res.send(result)
+})
 
 // application api
 
@@ -52,15 +72,17 @@ app.get("/applications", async (req, res) => {
     const result = await applicationsCollection.find(query).toArray();
 
     // another collection added
-    for (const application of result) {
-        const jobId = application.jobId;
+    for (const applicationData of result) {
+        const jobId = applicationData.jobId;
         const jobQuery = { _id: new ObjectId(jobId) };
         const job = await careerCollection.findOne(jobQuery);
-        application.company = job.company;
-        application.title = job.title;
-        application.company_logo = job.company_logo;
+        applicationData.company = job.company;
+        applicationData.title = job.title;
+        applicationData.company_logo = job.company_logo;
     }
     res.send(result);
+    console.log(result);
+    
 });
 
 app.post("/applications", async (req, res) => {
